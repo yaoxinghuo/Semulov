@@ -112,7 +112,9 @@ static inline NSString *stringOrEmpty(NSString *str) {
         return event;
     }];
     
-    _updater = [SUUpdater sharedUpdater];
+    [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:self];
+    
+    //_updater = [SUUpdater sharedUpdater];
 }
 
 #pragma mark -
@@ -818,6 +820,22 @@ static inline NSString *stringOrEmpty(NSString *str) {
 - (void)doCheckForUpdates:(id)sender
 {
     [_updater checkForUpdates:sender];
+}
+
+- (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
+{
+    (void)center;
+    NSString *path = [notification.userInfo objectForKey:@"path"];
+    if (path) {
+        NSString *defaultAppID = [[NSUserDefaults standardUserDefaults] objectForKey:@"SLShowinFinderBundleID"];
+        if (defaultAppID && [defaultAppID length] > 0) {
+            NSURL *appURL = [[NSWorkspace sharedWorkspace] URLForApplicationWithBundleIdentifier:defaultAppID];
+            (void)[[NSWorkspace sharedWorkspace] openFile:path withApplication:[appURL path]];
+        }
+        (void)[[NSWorkspace sharedWorkspace] selectFile:nil inFileViewerRootedAtPath:path];
+        //        [[NSWorkspace sharedWorkspace] openFile:path];
+    }
+    
 }
 
 @end
